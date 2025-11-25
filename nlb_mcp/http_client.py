@@ -17,7 +17,8 @@ class UpstreamError(RuntimeError):
 
 
 async def get_json(path: str, params: Optional[Dict[str, str]] = None) -> Any:
-    url = settings.nlb_api_base.rstrip("/") + path
+    base = str(settings.nlb_api_base).rstrip("/")
+    url = base + path
     timeout = settings.request_timeout_ms / 1000
 
     headers = {
