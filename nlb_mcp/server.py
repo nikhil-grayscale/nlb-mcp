@@ -5,11 +5,11 @@ from __future__ import annotations
 # Ensure package root is on sys.path when invoked as a file (e.g., fastmcp inspect /app/nlb_mcp/server.py).
 import sys
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from typing import Optional
 
 from fastmcp import FastMCP
 
@@ -156,7 +156,12 @@ async def tool_availability_at_branch(
     return normalize_availability(response)
 
 
-async def create_server() -> FastMCP:
+def create_server() -> FastMCP:
+    """
+    Create and return the FastMCP server.
+
+    Kept synchronous to avoid event loop issues during `fastmcp inspect`.
+    """
     # Initialize settings early to fail fast on missing env vars.
     _ = settings
 
@@ -188,19 +193,7 @@ async def create_server() -> FastMCP:
     return server
 
 
-# Eagerly create the server for FastMCP Cloud object discovery.
-server = mcp = app = None
-try:
-    import anyio  # type: ignore
-except ImportError:
-    # Fallback to asyncio if anyio is unavailable; FastMCP may ship with anyio.
-    import asyncio
-
-    server = mcp = app = asyncio.get_event_loop().run_until_complete(create_server())
-else:
-    import anyio
-
-    server = mcp = app = anyio.run(create_server)
-
+# Eagerly create the server object for discovery without starting event loops.
+server = mcp = app = create_server()
 
 __all__ = ["create_server", "server", "mcp", "app"]
