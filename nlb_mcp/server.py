@@ -168,7 +168,6 @@ def create_server() -> FastMCP:
     server = FastMCP(
         name="nlb-mcp",
         version="0.1.0",
-        description="Unofficial MCP server for NLB Singapore catalogue and availability APIs (Python)",
     )
 
     # Register tools. The decorator form is not used to keep explicit names/handlers clear.
