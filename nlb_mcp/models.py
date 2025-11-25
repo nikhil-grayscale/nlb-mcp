@@ -10,6 +10,7 @@ class TitleSummary(TypedDict, total=False):
     author: str
     isbn: str
     bibId: str
+    brn: int
     publisher: str
     publishYear: str
     formats: List[str]
@@ -25,35 +26,78 @@ class NormalizedAvailability(TypedDict, total=False):
 
 
 def normalize_titles(response: Dict[str, Any]) -> List[TitleSummary]:
-    titles = response.get("Result", {}).get("Titles", []) if isinstance(response, dict) else []
+    titles: List[Dict[str, Any]] = []
+    if isinstance(response, dict):
+        if isinstance(response.get("Result"), dict):
+            titles = response["Result"].get("Titles") or []
+        if not titles:
+            titles = response.get("titles") or []
     normalized: List[TitleSummary] = []
     for item in titles:
+        # Support both camelCase/caps variants from the API.
+        title = item.get("title") or item.get("TitleName")
+        author = item.get("author") or item.get("AuthorName")
+        isbn = item.get("isbn") or item.get("ISBN")
+        # Prefer explicit bibId; fall back to BRN if present.
+        bib_id = item.get("bibId") or item.get("BID")
+        brn = item.get("brn") or item.get("BRN")
+        if not bib_id and brn is not None:
+            try:
+                bib_id = str(brn)
+            except Exception:
+                pass
+
+        publisher = item.get("publisher") or item.get("Publisher")
+        publish_year = item.get("publishYear") or item.get("PublishYear")
+        category = item.get("Category") or item.get("format")
+        subjects = item.get("subjects") or item.get("Subjects") or []
+        if subjects is None:
+            subjects = []
+
         normalized.append(
             {
-                "title": item.get("TitleName"),
-                "author": item.get("AuthorName"),
-                "isbn": item.get("ISBN"),
-                "bibId": item.get("BID"),
-                "publisher": item.get("Publisher"),
-                "publishYear": item.get("PublishYear"),
-                "formats": [item["Category"]] if item.get("Category") else [],
-                "subjects": item.get("Subjects") or [],
+                "title": title,
+                "author": author,
+                "isbn": isbn,
+                "bibId": bib_id,
+                "brn": brn,
+                "publisher": publisher,
+                "publishYear": publish_year,
+                "formats": [category] if category else [],
+                "subjects": subjects,
             }
         )
     return normalized
 
 
 def normalize_availability(response: Dict[str, Any]) -> List[NormalizedAvailability]:
-    items = response.get("Result", {}).get("Items", []) if isinstance(response, dict) else []
+    items: List[Dict[str, Any]] = []
+    if isinstance(response, dict):
+        if isinstance(response.get("Result"), dict):
+            items = response["Result"].get("Items") or []
+        if not items:
+            items = response.get("items") or []
     normalized: List[NormalizedAvailability] = []
     for item in items:
+        branch = (
+            item.get("branchName")
+            or item.get("BranchName")
+            or item.get("branchId")
+            or item.get("BranchID")
+            or "Unknown branch"
+        )
+        call_number = item.get("callNumber") or item.get("CallNumber")
+        status = item.get("status") or item.get("Status")
+        available = item.get("available") if "available" in item else item.get("Available")
+        total = item.get("total") if "total" in item else item.get("Total")
+
         normalized.append(
             {
-                "branch": item.get("BranchName") or item.get("BranchID") or "Unknown branch",
-                "callNumber": item.get("CallNumber"),
-                "status": item.get("Status"),
-                "available": item.get("Available"),
-                "total": item.get("Total"),
+                "branch": branch,
+                "callNumber": call_number,
+                "status": status,
+                "available": available,
+                "total": total,
             }
         )
     return normalized
