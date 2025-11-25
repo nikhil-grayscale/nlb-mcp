@@ -1,0 +1,200 @@
+"""FastMCP server definition for the NLB Singapore MCP server (Python)."""
+
+from __future__ import annotations
+
+from typing import Optional
+
+from fastmcp import FastMCP
+
+from .config import settings
+from .http_client import health_check as basic_health
+from .logging import get_logger
+from .models import NormalizedAvailability, TitleSummary, normalize_availability, normalize_titles
+from .nlb_client import get_availability, get_titles, search_titles
+
+
+def _clamp_limit(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+    if value < 1:
+        raise ValueError("limit must be >= 1")
+    return min(value, 100)
+
+
+def _validate_sort(sort_fields: Optional[str]) -> Optional[str]:
+    if sort_fields and len(sort_fields) > 100:
+        raise ValueError("sort_fields too long; max 100 characters")
+    return sort_fields
+
+
+def _validate_identifiers(bib_id: Optional[str], isbn: Optional[str], control_no: Optional[str]) -> None:
+    if not (bib_id or isbn or control_no):
+        raise ValueError("Provide at least one identifier: bib_id, isbn, or control_no")
+
+
+async def health_check() -> dict:
+    # FastMCP handles OAuth2; this only verifies configuration is loaded.
+    return await basic_health()
+
+
+async def tool_search_titles(
+    keywords: str,
+    limit: Optional[int] = None,
+    sort_fields: Optional[str] = None,
+    source: Optional[str] = None,
+) -> list[TitleSummary]:
+    log = get_logger()
+    log.info(
+        "tool search_titles called",
+        extra={"has_keywords": bool(keywords and keywords.strip()), "has_source": bool(source)},
+    )
+    response = await search_titles(
+        keywords=keywords.strip(),
+        limit=_clamp_limit(limit),
+        sort_fields=_validate_sort(sort_fields),
+        source=source.strip() if source else None,
+    )
+    return normalize_titles(response)
+
+
+async def tool_get_titles(
+    keywords: Optional[str] = None,
+    title: Optional[str] = None,
+    author: Optional[str] = None,
+    subject: Optional[str] = None,
+    isbn: Optional[str] = None,
+    limit: Optional[int] = None,
+    sort_fields: Optional[str] = None,
+    set_id: Optional[int] = None,
+    offset: Optional[int] = None,
+) -> list[TitleSummary]:
+    log = get_logger()
+    log.info(
+        "tool search_titles_advanced called",
+        extra={
+            "has_keywords": bool(keywords and keywords.strip()),
+            "has_title": bool(title and title.strip()),
+            "has_author": bool(author and author.strip()),
+            "has_subject": bool(subject and subject.strip()),
+            "has_isbn": bool(isbn and isbn.strip()),
+        },
+    )
+    response = await get_titles(
+        keywords=keywords.strip() if keywords else None,
+        title=title.strip() if title else None,
+        author=author.strip() if author else None,
+        subject=subject.strip() if subject else None,
+        isbn=isbn.strip() if isbn else None,
+        limit=_clamp_limit(limit),
+        sort_fields=_validate_sort(sort_fields),
+        set_id=set_id,
+        offset=offset,
+    )
+    return normalize_titles(response)
+
+
+async def tool_availability(
+    bib_id: Optional[str] = None,
+    isbn: Optional[str] = None,
+    control_no: Optional[str] = None,
+    branch_id: Optional[str] = None,
+) -> list[NormalizedAvailability]:
+    log = get_logger()
+    _validate_identifiers(bib_id, isbn, control_no)
+    log.info(
+        "tool availability_by_title called",
+        extra={
+            "has_bib": bool(bib_id),
+            "has_isbn": bool(isbn),
+            "has_control": bool(control_no),
+            "has_branch": bool(branch_id),
+        },
+    )
+
+    response = await get_availability(
+        bib_id=bib_id.strip() if bib_id else None,
+        isbn=isbn.strip() if isbn else None,
+        control_no=control_no.strip() if control_no else None,
+        branch_id=branch_id.strip() if branch_id else None,
+    )
+    return normalize_availability(response)
+
+
+async def tool_availability_at_branch(
+    branch_id: str,
+    bib_id: Optional[str] = None,
+    isbn: Optional[str] = None,
+    control_no: Optional[str] = None,
+) -> list[NormalizedAvailability]:
+    # Require a branch plus at least one identifier to avoid broad queries.
+    if not branch_id:
+        raise ValueError("branch_id is required")
+    _validate_identifiers(bib_id, isbn, control_no)
+    log = get_logger()
+    log.info(
+        "tool availability_at_branch called",
+        extra={
+            "has_bib": bool(bib_id),
+            "has_isbn": bool(isbn),
+            "has_control": bool(control_no),
+            "branch": branch_id,
+        },
+    )
+
+    response = await get_availability(
+        bib_id=bib_id.strip() if bib_id else None,
+        isbn=isbn.strip() if isbn else None,
+        control_no=control_no.strip() if control_no else None,
+        branch_id=branch_id.strip(),
+    )
+    return normalize_availability(response)
+
+
+async def create_server() -> FastMCP:
+    # Initialize settings early to fail fast on missing env vars.
+    _ = settings
+
+    server = FastMCP(
+        name="nlb-mcp",
+        version="0.1.0",
+        description="Unofficial MCP server for NLB Singapore catalogue and availability APIs (Python)",
+    )
+
+    # Register tools. The decorator form is not used to keep explicit names/handlers clear.
+    server.tool(name="health_check", description="Validate config and startup readiness.")(health_check)
+    server.tool(
+        name="search_titles",
+        description="Search NLB catalogue by keyword (BRN/ISBN/Title/Author/Subject).",
+    )(tool_search_titles)
+    server.tool(
+        name="search_titles_advanced",
+        description="Fielded search for titles with optional author/subject/ISBN filters and pagination.",
+    )(tool_get_titles)
+    server.tool(
+        name="availability_by_title",
+        description="Get item availability for a title/ISBN with branch breakdown.",
+    )(tool_availability)
+    server.tool(
+        name="availability_at_branch",
+        description="Get item availability for a title/ISBN at a specific branch.",
+    )(tool_availability_at_branch)
+
+    return server
+
+
+# Eagerly create the server for FastMCP Cloud object discovery.
+server = mcp = app = None
+try:
+    import anyio  # type: ignore
+except ImportError:
+    # Fallback to asyncio if anyio is unavailable; FastMCP may ship with anyio.
+    import asyncio
+
+    server = mcp = app = asyncio.get_event_loop().run_until_complete(create_server())
+else:
+    import anyio
+
+    server = mcp = app = anyio.run(create_server)
+
+
+__all__ = ["create_server", "server", "mcp", "app"]
