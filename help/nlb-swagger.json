@@ -1,0 +1,3602 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Catalogue",
+    "description": "REST Web Service to search and retrieve physical library items and item availability at NLB's libraries.",
+    "version": "v2"
+  },
+  "servers": [
+    {
+      "url": "https://openweb.nlb.gov.sg/api/v2/Catalogue"
+    }
+  ],
+  "paths": {
+    "/SearchTitles": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Searching catalogue content according to search criteria",
+        "description": "This function may be used to search for titles using query parameter.",
+        "parameters": [
+          {
+            "name": "Keywords",
+            "in": "query",
+            "description": "Keywords can be BRN/ISBN/Title/Author/Subject.",
+            "required": true,
+            "schema": {
+              "maxLength": 250,
+              "type": "string"
+            }
+          },
+          {
+            "name": "Source",
+            "in": "query",
+            "description": "Refer to title response element \"source\"",
+            "schema": {
+              "maxLength": 30,
+              "type": "string",
+              "example": "overdrive"
+            },
+            "example": "overdrive"
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "Number of records to return.",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "SortFields",
+            "in": "query",
+            "description": "<p>Supported values are relevancy, newmaterial, publicationDate.</p>\r\n\t\t\t<p>Note: Do URL encode the value.</p>\r\n            <ul>\r\n            <li>Use prefix + or - to sort by ascending or descending and comma(,) separated for multiple sort fields.</li>\r\n            <li>relevancy</li>\r\n\t\t\t<li>newmaterial</li>\r\n            <li>+publicationDate</li>\r\n            <li>-publicationDate</li>\r\n            </ul>",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "Offset used to retrieve subsequent records set by pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "MaterialTypes",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t      <p>Sample Value:</p>\r\n\t\t\t  <ul>\r\n\t\t\t\t<li>bks</li>\r\n\t\t\t\t<li>ebk</li>\r\n\t\t\t\t<li>dvd</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "IntendedAudiences",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t\t  <p>Sample Value:</p>\r\n\t\t\t  <ul>\r\n\t\t\t    <li>adult</li>\r\n\t\t\t\t<li>junior</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "description": "Publish Year",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "description": "Publish Year",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Locations",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t\t  <p>Sample Value:</p>\r\n\t\t\t  <ul>\t\r\n\t\t\t\t<li>amkpl</li>\r\n\t\t\t\t<li>sbpl</li>\r\n\t\t\t\t<li>trl</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Languages",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t\t  <p>Sample Value:</p>\r\n\t\t\t  <ul>\r\n\t\t\t\t<li>eng</li>\r\n\t\t\t\t<li>chi</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Availability",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Fiction",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchTitlesResponseV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodNotAllowedError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotImplementedError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUnavailableError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [ ],
+            "AppCode": [ ]
+          }
+        ]
+      }
+    },
+    "/GetTitles": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Searching catalogue content according to search criteria",
+        "description": "This function may be used to search for titles using query parameter. \r\n\t\t\t\t\t\t\t<p>This function provide multiple combination search, they will be processed with AND operation.</p>\r\n\t\t\t\t\t\t\t<p>The request must contain at least one of the Keywords, ISBN, Author, Subject or Title.</p>",
+        "parameters": [
+          {
+            "name": "Keywords",
+            "in": "query",
+            "description": "Keywords can be Title/Author/Subject/ISBN.\r\n\t\t\t\t\t\t\t<p>If the keyword is present, other parameters will be ignored.</p>",
+            "schema": {
+              "maxLength": 250,
+              "type": "string"
+            }
+          },
+          {
+            "name": "Title",
+            "in": "query",
+            "description": "Title",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "Author",
+            "in": "query",
+            "description": "Author name.",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "Subject",
+            "in": "query",
+            "description": "Subject",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "ISBN",
+            "in": "query",
+            "description": "The standardised 10-digit or 13-digit international number that uniquely identifies a monographic publication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "Number of records to return.",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "SortFields",
+            "in": "query",
+            "description": "<p>Supported values are relevancy, newmaterial, publicationDate.</p>\r\n\t\t\t<p>Note: Do URL encode the value.</p>\r\n            <ul>\r\n            <li>Use prefix + or - to sort by ascending or descending and comma(,) separated for multiple sort fields.</li>\r\n            <li>relevancy</li>\r\n\t\t\t<li>newmaterial</li>\r\n            <li>+publicationDate</li>\r\n            <li>-publicationDate</li>\r\n            </ul>",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "SetId",
+            "in": "query",
+            "description": "SetId used to retrieve subsequent records set by pagination.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "Offset used to retrieve subsequent records set by pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTitlesResponseV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodNotAllowedError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUnavailableError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [ ],
+            "AppCode": [ ]
+          }
+        ]
+      }
+    },
+    "/GetTitleDetails": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Getting the detailed information of an item",
+        "description": "This function may be used to retrieve the title information.\r\n\t\t\t\t\t\t\t<p>At least one of the search fields is required:</p>\r\n                            <ul>\r\n                            <li>BRN</li>\r\n                            <li>ISBN</li>\r\n                            </ul>",
+        "parameters": [
+          {
+            "name": "BRN",
+            "in": "query",
+            "description": "Book reference number",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ISBN",
+            "in": "query",
+            "description": "The standardised 10-digit or 13-digit international number that uniquely identifies a monographic publication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTitleDetailsResponseV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodNotAllowedError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUnavailableError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [ ],
+            "AppCode": [ ]
+          }
+        ]
+      }
+    },
+    "/GetAvailabilityInfo": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Checking whether the item is available for loan",
+        "description": "This function may be used to retrieve the circulation item(s) detail for the title.\r\n\t\t\t\t\t\t\t<p>At least one of the search fields is required:</p>\r\n                            <ul>\r\n                            <li>BRN</li>\r\n                            <li>ISBN</li>\r\n                            </ul>",
+        "parameters": [
+          {
+            "name": "LocationCode",
+            "in": "query",
+            "description": "Location code please refer to table T001.",
+            "schema": {
+              "pattern": "^(TRL|WRL|CMPL|LKCRL|AMKPL|BBPL|BPPL|BMPL|CLL|CSPL|CCKPL|GEPL|JRL|JWPL|QUPL|TPPL|YIPL|OCPL|CNPL|SBPL|LSC|SRPL|LOLC|MPPL|BEPL|SKPL|EPPL|MOLLEY|PRPL|BIPL|LSCAV|07LKCRL|08LKCRL|09LKCRL|11LKCRL|HBPL)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "Number of records to return.",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "SortFields",
+            "in": "query",
+            "description": "<p>Note: Do URL encode the value.</p>\r\n            <ul>\r\n            <li>Use prefix + or - to sort by ascending or descending and comma(,) separated for multiple sort fields.</li>\r\n            <li>+locationCode</li>\r\n            <li>-locationCode</li>\r\n            </ul>",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SetId",
+            "in": "query",
+            "description": "SetId used to retrieve subsequent records set by pagination.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "offset used to retrieve subsequent records set by pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "BRN",
+            "in": "query",
+            "description": "Book reference number",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ISBN",
+            "in": "query",
+            "description": "The standardised 10-digit or 13-digit international number that uniquely identifies a monographic publication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAvailabilityInfoResponseV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodNotAllowedError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUnavailableError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [ ],
+            "AppCode": [ ]
+          }
+        ]
+      }
+    },
+    "/GetNewTitles": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "This function may be used to browse the new arrival titles.",
+        "description": "This function may be used to Get the New titles using query parameter.",
+        "parameters": [
+          {
+            "name": "DateRange",
+            "in": "query",
+            "description": "Supported values are Quarterly, Monthly, Weekly.",
+            "required": true,
+            "schema": {
+              "pattern": "^(Quarterly|Monthly|Weekly)$",
+              "type": "string",
+              "default": "Weekly"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "Number of records to return.",
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 200
+            }
+          },
+          {
+            "name": "SortFields",
+            "in": "query",
+            "description": "<p>Supported values are relevancy, newmaterial, publicationDate.</p>\r\n\t\t\t<p>Note: Do URL encode the value.</p>\r\n            <ul>\r\n            <li>Use prefix + or - to sort by ascending or descending and comma(,) separated for multiple sort fields.</li>\r\n            <li>relevancy</li>\r\n\t\t\t<li>newmaterial</li>\r\n            <li>+publicationDate</li>\r\n            <li>-publicationDate</li>\r\n            </ul>",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SetId",
+            "in": "query",
+            "description": "SetId used to retrieve subsequent records set by pagination.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "offset used to retrieve subsequent records set by pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "MaterialTypes",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t      <p>Sample Value:</p>\r\n\t\t\t  <ul>\r\n\t\t\t\t<li>bks</li>\r\n\t\t\t\t<li>ebk</li>\r\n\t\t\t\t<li>dvd</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "IntendedAudiences",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t\t  <p>Sample Value:</p>\r\n\t\t\t  <ul>\r\n\t\t\t    <li>adult</li>\r\n\t\t\t\t<li>junior</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "description": "Publish Year",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "description": "Publish Year",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Locations",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t\t  <p>Sample Value:</p>\r\n\t\t\t  <ul>\t\r\n\t\t\t\t<li>amkpl</li>\r\n\t\t\t\t<li>sbpl</li>\r\n\t\t\t\t<li>trl</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Languages",
+            "in": "query",
+            "description": "<h5>Please refer to the response \"facets\" and get the id values to pass in the parameter.</h5>\r\n\t\t\t  <p>Sample Value:</p>\r\n\t\t\t  <ul>\r\n\t\t\t\t<li>eng</li>\r\n\t\t\t\t<li>chi</li>\r\n\t\t\t  </ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Availability",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Fiction",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchNewTitlesResponseV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodNotAllowedError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUnavailableError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [ ],
+            "AppCode": [ ]
+          }
+        ]
+      }
+    },
+    "/GetMostCheckoutsTrendsTitles": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "This function may be used to search and retrieve statistics of most checkout trends titles and filter by location.",
+        "description": "This function may be used to retrieve the most checkout trends titles by location.",
+        "parameters": [
+          {
+            "name": "LocationCode",
+            "in": "query",
+            "description": "Location code to return most Checkouts titles from this location. Refer to table T001.",
+            "required": true,
+            "schema": {
+              "pattern": "^(TRL|WRL|CMPL|LKCRL|AMKPL|BBPL|BPPL|BMPL|CLL|CSPL|CCKPL|GEPL|JRL|JWPL|QUPL|TPPL|YIPL|OCPL|CNPL|SBPL|LSC|SRPL|LOLC|MPPL|BEPL|SKPL|EPPL|MOLLEY|PRPL|BIPL|LSCAV|07LKCRL|08LKCRL|09LKCRL|11LKCRL|HBPL)$",
+              "type": "string",
+              "example": "AMKPL"
+            },
+            "example": "AMKPL"
+          },
+          {
+            "name": "Duration",
+            "in": "query",
+            "description": "Duration to return most Checkouts titles.\r\n\t\t\t<p><i>Available values</i> : past30days, pastmonth</p>",
+            "schema": {
+              "pattern": "^(pastmonth|past30days)$",
+              "type": "string",
+              "default": "past30days",
+              "example": "past30days"
+            },
+            "example": "past30days"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchMostCheckoutsTitlesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodNotAllowedError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUnavailableError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [ ],
+            "AppCode": [ ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BadRequestError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 400
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Bad Request"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "FieldName is missing."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "BibFormat": {
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Bibliographic Format code.",
+            "example": "BK"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Bibliographic Format desc.",
+            "example": "BOOKS"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Bibliographic Formats. Please refer to code list C001."
+      },
+      "BookCover": {
+        "type": "object",
+        "properties": {
+          "small": {
+            "type": "string",
+            "description": "Small size image url",
+            "nullable": true
+          },
+          "medium": {
+            "type": "string",
+            "description": "Medium size image url",
+            "nullable": true
+          },
+          "large": {
+            "type": "string",
+            "description": "Large size image url",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CheckoutsTitle": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Bibliographic title in english",
+            "nullable": true
+          },
+          "nativeTitle": {
+            "type": "string",
+            "description": "Bibliographic title in native language",
+            "nullable": true
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name in english",
+            "nullable": true
+          },
+          "nativeAuthor": {
+            "type": "string",
+            "description": "Author name in native language",
+            "nullable": true
+          },
+          "isbns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "isbns",
+            "nullable": true
+          },
+          "checkoutsCount": {
+            "type": "integer",
+            "description": "Checkouts count for the duration.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CheckoutsTrend": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string",
+            "description": "Language are are English, Chinese, Malay, Tamil..",
+            "nullable": true,
+            "example": "99999999"
+          },
+          "ageLevel": {
+            "type": "string",
+            "description": "ageLevel  A - Adult ,* Y - Young, *J - Juni0r.",
+            "nullable": true
+          },
+          "fiction": {
+            "type": "boolean",
+            "description": "Fiction or not"
+          },
+          "singaporeCollection": {
+            "type": "boolean",
+            "description": "Singapore Collection or not"
+          },
+          "checkoutsTitles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutsTitle"
+            },
+            "description": "checkoutsTitles",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CourseCode": {
+        "required": [
+          "clusterName",
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Course Code.",
+            "example": "N1001"
+          },
+          "clusterName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Cluster Name.",
+            "example": "Lifestyle Design"
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "Category Name.",
+            "nullable": true,
+            "example": "Culture & Society"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Course Code."
+      },
+      "Facet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "facet name identifier to use in the query string parameter",
+            "nullable": true,
+            "example": "materialType"
+          },
+          "name": {
+            "type": "string",
+            "description": "facet name to display in the UI.",
+            "nullable": true,
+            "example": "Material Type"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetData"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FacetData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "facet data identifier to use the query string parameter.",
+            "nullable": true,
+            "example": "audioBook"
+          },
+          "data": {
+            "type": "string",
+            "description": "facet data name to display in the UI.",
+            "nullable": true,
+            "example": "Audio Book"
+          },
+          "count": {
+            "type": "integer",
+            "description": "facet data count.",
+            "format": "int32",
+            "example": 17
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetAvailabilityInfoResponseV2": {
+        "type": "object",
+        "properties": {
+          "setId": {
+            "type": "integer",
+            "description": "Search result dataset id.",
+            "format": "int32"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "description": "Total number of records for this search(dataset).",
+            "format": "int32",
+            "example": 999
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of records returned in the response.",
+            "format": "int32",
+            "example": 999
+          },
+          "hasMoreRecords": {
+            "type": "boolean",
+            "description": "Indicator - if dataset has more records or not for pagination.",
+            "default": false
+          },
+          "nextRecordsOffset": {
+            "type": "integer",
+            "description": "Value to pass in Offset parameter to navigate to next page.",
+            "format": "int32",
+            "example": 20
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTitleDetailsResponseV2": {
+        "required": [
+          "format"
+        ],
+        "type": "object",
+        "properties": {
+          "brn": {
+            "type": "integer",
+            "description": "Bibliographic reference number.",
+            "format": "int32",
+            "example": 99999999
+          },
+          "digitalId": {
+            "type": "string",
+            "description": "For external query purpose, to get the title or reserve the title in Overdrive",
+            "nullable": true,
+            "example": "Overdrive Id"
+          },
+          "otherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles.",
+            "nullable": true
+          },
+          "nativeOtherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles(Native language).",
+            "nullable": true
+          },
+          "variantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title.",
+            "nullable": true
+          },
+          "nativeVariantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title(Native language).",
+            "nullable": true
+          },
+          "otherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors.",
+            "nullable": true
+          },
+          "nativeOtherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors(Native language).",
+            "nullable": true
+          },
+          "isbns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Book Number identifiers.",
+            "example": [
+              "9709999999"
+            ]
+          },
+          "issns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Serial Number identifiers.",
+            "nullable": true,
+            "example": [
+              "9999-9999"
+            ]
+          },
+          "format": {
+            "$ref": "#/components/schemas/BibFormat"
+          },
+          "edition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work.",
+            "nullable": true,
+            "example": [
+              "Di 1 ban"
+            ]
+          },
+          "nativeEdition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work(Native language).",
+            "nullable": true,
+            "example": [
+              "第1版"
+            ]
+          },
+          "publisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by.",
+            "example": [
+              "[Xi'an] : Wei lai chu ban she"
+            ]
+          },
+          "nativePublisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by(Native language).",
+            "nullable": true,
+            "example": [
+              "[西安] : 未来出版社"
+            ]
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "publish date or year.",
+            "example": "2019-"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "subjects.",
+            "example": [
+              "Science -- Experiments -- Juvenile films"
+            ]
+          },
+          "physicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions.",
+            "example": [
+              "283 p. : ill. ; 22 cm"
+            ]
+          },
+          "nativePhysicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions(Native language).",
+            "nullable": true,
+            "example": [
+              "283页 : 插图 ; 22公分"
+            ]
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content.",
+            "nullable": true
+          },
+          "nativeSummary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content(Native language).",
+            "nullable": true
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note.",
+            "nullable": true
+          },
+          "nativeContents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note(Native language).",
+            "nullable": true
+          },
+          "thesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note.",
+            "nullable": true
+          },
+          "nativeThesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note(Native language).",
+            "nullable": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "notes."
+          },
+          "nativeNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native notes of the bibliographic record.",
+            "nullable": true
+          },
+          "allowReservation": {
+            "type": "boolean",
+            "description": "Allow to place reservation or not.",
+            "default": true
+          },
+          "isRestricted": {
+            "type": "boolean",
+            "description": "true, when title is marked as restricted publication.",
+            "default": false
+          },
+          "activeReservationsCount": {
+            "type": "integer",
+            "description": "Number of reservations placed and in queue, not fullfilled and not expired.",
+            "format": "int32",
+            "example": 3
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Target audience - Marc tag 521 (all).",
+            "nullable": true
+          },
+          "audienceImda": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "target audience - Marc tag 521 Ind 3 - Specific to highlight in display.",
+            "nullable": true,
+            "example": [
+              "IMDA Advisory: Parental Guidance recommended."
+            ]
+          },
+          "language": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Languages",
+            "example": [
+              "Chinese"
+            ]
+          },
+          "serial": {
+            "type": "boolean",
+            "description": "serial indicator.",
+            "default": false
+          },
+          "volumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information.",
+            "nullable": true,
+            "example": [
+              "Vol. 1 (Jul. 1859)-"
+            ]
+          },
+          "nativeVolumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information(Native language).",
+            "nullable": true
+          },
+          "frequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency.",
+            "nullable": true,
+            "example": [
+              "Monthly"
+            ]
+          },
+          "nativeFrequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency(Native language).",
+            "nullable": true
+          },
+          "credits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note.",
+            "nullable": true
+          },
+          "nativeCredits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note(Native language).",
+            "nullable": true
+          },
+          "performers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note.",
+            "nullable": true
+          },
+          "nativePerformers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note(Native language).",
+            "nullable": true
+          },
+          "availability": {
+            "type": "boolean",
+            "description": "true when at least 1 item is \"available\" status.",
+            "example": false
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the title",
+            "nullable": true,
+            "example": "Overdrive"
+          },
+          "volumes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume name.",
+            "nullable": true,
+            "example": [
+              "2023 issue 2"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record."
+          },
+          "nativeTitle": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record(Native language).",
+            "nullable": true
+          },
+          "seriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles.",
+            "nullable": true,
+            "example": [
+              "123 Zhima Jie"
+            ]
+          },
+          "nativeSeriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles(Native language).",
+            "nullable": true,
+            "example": [
+              "123芝麻街"
+            ]
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name in english.",
+            "example": "Song bing wu de yi xiang shi jie."
+          },
+          "nativeAuthor": {
+            "type": "string",
+            "description": "Bibliographic title(Native language).",
+            "nullable": true,
+            "example": "松饼屋的异想世界"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTitlesResponseV2": {
+        "type": "object",
+        "properties": {
+          "totalRecords": {
+            "type": "integer",
+            "description": "Total number of records for this search(dataset).",
+            "format": "int32",
+            "example": 999
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of records returned in the response.",
+            "format": "int32",
+            "example": 999
+          },
+          "hasMoreRecords": {
+            "type": "boolean",
+            "description": "Indicator - if dataset has more records or not for pagination.",
+            "default": false
+          },
+          "nextRecordsOffset": {
+            "type": "integer",
+            "description": "Value to pass in Offset parameter to navigate to next page.",
+            "format": "int32",
+            "example": 20
+          },
+          "setId": {
+            "type": "integer",
+            "description": "Search result dataset id.",
+            "format": "int32",
+            "example": 99999
+          },
+          "titles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Title"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "InternalServerError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 500
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Internal Server Error"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "Internal server error"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "Item": {
+        "required": [
+          "location",
+          "media",
+          "transactionStatus",
+          "usageLevel"
+        ],
+        "type": "object",
+        "properties": {
+          "irn": {
+            "type": "integer",
+            "description": "Item Internal Identifier.",
+            "format": "int32",
+            "example": 99999999
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item Id.",
+            "example": "BxxxxxxxJ"
+          },
+          "brn": {
+            "type": "integer",
+            "description": "Title record Book Reference Number.",
+            "format": "int32",
+            "example": 99999999
+          },
+          "volumeName": {
+            "type": "string",
+            "description": "Volume Identifier.",
+            "nullable": true,
+            "example": "2023 issue 1"
+          },
+          "callNumber": {
+            "type": "string",
+            "description": "Call Number.",
+            "example": "123.123 ART"
+          },
+          "formattedCallNumber": {
+            "type": "string",
+            "description": "Formatted Call Number.",
+            "example": "English 123.123 -[ART]"
+          },
+          "media": {
+            "$ref": "#/components/schemas/Media"
+          },
+          "usageLevel": {
+            "$ref": "#/components/schemas/UsageLevel"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "courseCode": {
+            "$ref": "#/components/schemas/CourseCode"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language.",
+            "example": "English"
+          },
+          "suffix": {
+            "type": "string",
+            "description": "Suffix.",
+            "nullable": true,
+            "example": "-[ART]"
+          },
+          "donor": {
+            "type": "string",
+            "description": "Item donated by information.",
+            "nullable": true,
+            "example": "Donated by abc"
+          },
+          "price": {
+            "type": "number",
+            "description": "Item price.",
+            "format": "double",
+            "nullable": true,
+            "example": 9999.99
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "transactionStatus": {
+            "$ref": "#/components/schemas/TransactionStatus"
+          },
+          "minAgeLimit": {
+            "type": "integer",
+            "description": "Title age limit.",
+            "format": "int32",
+            "example": 13
+          }
+        },
+        "additionalProperties": false
+      },
+      "Location": {
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Library code",
+            "example": "AMKPL"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Library Name",
+            "example": "Ang Mo Kio Public Library"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Library Location. Please refer to code list C005."
+      },
+      "Media": {
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Media Code",
+            "example": "DV18"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Media Name",
+            "example": "Digital Video for M18"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Item Material Type. Please refer to code list C002."
+      },
+      "MethodNotAllowedError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 405
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Method Not Allowed"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "The requested resource does not support http method 'PUT'"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "NewArrivalTitle": {
+        "required": [
+          "format"
+        ],
+        "type": "object",
+        "properties": {
+          "brn": {
+            "type": "integer",
+            "description": "Bibliographic reference number.",
+            "format": "int32",
+            "example": 99999999
+          },
+          "digitalId": {
+            "type": "string",
+            "description": "For external query purpose, to get the title or reserve the title in Overdrive",
+            "nullable": true,
+            "example": "Overdrive Id"
+          },
+          "otherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles.",
+            "nullable": true
+          },
+          "nativeOtherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles(Native language).",
+            "nullable": true
+          },
+          "variantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title.",
+            "nullable": true
+          },
+          "nativeVariantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title(Native language).",
+            "nullable": true
+          },
+          "otherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors.",
+            "nullable": true
+          },
+          "nativeOtherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors(Native language).",
+            "nullable": true
+          },
+          "isbns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Book Number identifiers.",
+            "example": [
+              "9709999999"
+            ]
+          },
+          "issns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Serial Number identifiers.",
+            "nullable": true,
+            "example": [
+              "9999-9999"
+            ]
+          },
+          "format": {
+            "$ref": "#/components/schemas/BibFormat"
+          },
+          "edition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work.",
+            "nullable": true,
+            "example": [
+              "Di 1 ban"
+            ]
+          },
+          "nativeEdition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work(Native language).",
+            "nullable": true,
+            "example": [
+              "第1版"
+            ]
+          },
+          "publisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by.",
+            "example": [
+              "[Xi'an] : Wei lai chu ban she"
+            ]
+          },
+          "nativePublisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by(Native language).",
+            "nullable": true,
+            "example": [
+              "[西安] : 未来出版社"
+            ]
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "publish date or year.",
+            "example": "2019-"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "subjects.",
+            "example": [
+              "Science -- Experiments -- Juvenile films"
+            ]
+          },
+          "physicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions.",
+            "example": [
+              "283 p. : ill. ; 22 cm"
+            ]
+          },
+          "nativePhysicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions(Native language).",
+            "nullable": true,
+            "example": [
+              "283页 : 插图 ; 22公分"
+            ]
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content.",
+            "nullable": true
+          },
+          "nativeSummary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content(Native language).",
+            "nullable": true
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note.",
+            "nullable": true
+          },
+          "nativeContents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note(Native language).",
+            "nullable": true
+          },
+          "thesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note.",
+            "nullable": true
+          },
+          "nativeThesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note(Native language).",
+            "nullable": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "notes."
+          },
+          "nativeNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native notes of the bibliographic record.",
+            "nullable": true
+          },
+          "allowReservation": {
+            "type": "boolean",
+            "description": "Allow to place reservation or not.",
+            "default": true
+          },
+          "isRestricted": {
+            "type": "boolean",
+            "description": "true, when title is marked as restricted publication.",
+            "default": false
+          },
+          "activeReservationsCount": {
+            "type": "integer",
+            "description": "Number of reservations placed and in queue, not fullfilled and not expired.",
+            "format": "int32",
+            "example": 3
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Target audience - Marc tag 521 (all).",
+            "nullable": true
+          },
+          "audienceImda": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "target audience - Marc tag 521 Ind 3 - Specific to highlight in display.",
+            "nullable": true,
+            "example": [
+              "IMDA Advisory: Parental Guidance recommended."
+            ]
+          },
+          "language": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Languages",
+            "example": [
+              "Chinese"
+            ]
+          },
+          "serial": {
+            "type": "boolean",
+            "description": "serial indicator.",
+            "default": false
+          },
+          "volumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information.",
+            "nullable": true,
+            "example": [
+              "Vol. 1 (Jul. 1859)-"
+            ]
+          },
+          "nativeVolumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information(Native language).",
+            "nullable": true
+          },
+          "frequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency.",
+            "nullable": true,
+            "example": [
+              "Monthly"
+            ]
+          },
+          "nativeFrequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency(Native language).",
+            "nullable": true
+          },
+          "credits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note.",
+            "nullable": true
+          },
+          "nativeCredits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note(Native language).",
+            "nullable": true
+          },
+          "performers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note.",
+            "nullable": true
+          },
+          "nativePerformers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note(Native language).",
+            "nullable": true
+          },
+          "availability": {
+            "type": "boolean",
+            "description": "true when at least 1 item is \"available\" status.",
+            "example": false
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the title",
+            "nullable": true,
+            "example": "Overdrive"
+          },
+          "volumes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume name.",
+            "nullable": true,
+            "example": [
+              "2023 issue 2"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record."
+          },
+          "nativeTitle": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record(Native language).",
+            "nullable": true
+          },
+          "seriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles.",
+            "nullable": true,
+            "example": [
+              "123 Zhima Jie"
+            ]
+          },
+          "nativeSeriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles(Native language).",
+            "nullable": true,
+            "example": [
+              "123芝麻街"
+            ]
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name in english.",
+            "example": "Song bing wu de yi xiang shi jie."
+          },
+          "nativeAuthor": {
+            "type": "string",
+            "description": "Bibliographic title(Native language).",
+            "nullable": true,
+            "example": "松饼屋的异想世界"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotFoundError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 404
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Not Found"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "Record(s) not found"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "NotImplementedError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 501
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Not Implemented"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "Not Implemented"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "SearchMostCheckoutsTitlesResponse": {
+        "type": "object",
+        "properties": {
+          "checkoutsTrends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutsTrend"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchNewTitlesResponseV2": {
+        "type": "object",
+        "properties": {
+          "totalRecords": {
+            "type": "integer",
+            "description": "Total number of records for this search(dataset).",
+            "format": "int32",
+            "example": 999
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of records returned in the response.",
+            "format": "int32",
+            "example": 999
+          },
+          "nextRecordsOffset": {
+            "type": "integer",
+            "description": "Value to pass in Offset parameter to navigate to next page.",
+            "format": "int32",
+            "example": 20
+          },
+          "hasMoreRecords": {
+            "type": "boolean",
+            "description": "Indicator - if dataset has more records or not for pagination.",
+            "default": false
+          },
+          "titles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewArrivalTitle"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchTitlesResponseV2": {
+        "type": "object",
+        "properties": {
+          "totalRecords": {
+            "type": "integer",
+            "description": "Total number of records for this search(dataset).",
+            "format": "int32",
+            "example": 999
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of records returned in the response.",
+            "format": "int32",
+            "example": 999
+          },
+          "hasMoreRecords": {
+            "type": "boolean",
+            "description": "Indicator - if dataset has more records or not for pagination.",
+            "default": false
+          },
+          "nextRecordsOffset": {
+            "type": "integer",
+            "description": "Value to pass in Offset parameter to navigate to next page.",
+            "format": "int32",
+            "example": 20
+          },
+          "titles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TitleSummary"
+            }
+          },
+          "facets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Facet"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceUnavailableError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 503
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Service unavailable"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "Service unavailable"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "Status": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Item status code.",
+            "nullable": true,
+            "example": "I"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Item status name",
+            "example": "In Transist"
+          },
+          "setDate": {
+            "type": "string",
+            "description": "status set date",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2019-07-21"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Item Status."
+      },
+      "Title": {
+        "required": [
+          "format"
+        ],
+        "type": "object",
+        "properties": {
+          "brn": {
+            "type": "integer",
+            "description": "Bibliographic reference number.",
+            "format": "int32",
+            "example": 99999999
+          },
+          "digitalId": {
+            "type": "string",
+            "description": "For external query purpose, to get the title or reserve the title in Overdrive",
+            "nullable": true,
+            "example": "Overdrive Id"
+          },
+          "otherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles.",
+            "nullable": true
+          },
+          "nativeOtherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles(Native language).",
+            "nullable": true
+          },
+          "variantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title.",
+            "nullable": true
+          },
+          "nativeVariantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title(Native language).",
+            "nullable": true
+          },
+          "otherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors.",
+            "nullable": true
+          },
+          "nativeOtherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors(Native language).",
+            "nullable": true
+          },
+          "isbns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Book Number identifiers.",
+            "example": [
+              "9709999999"
+            ]
+          },
+          "issns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Serial Number identifiers.",
+            "nullable": true,
+            "example": [
+              "9999-9999"
+            ]
+          },
+          "format": {
+            "$ref": "#/components/schemas/BibFormat"
+          },
+          "edition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work.",
+            "nullable": true,
+            "example": [
+              "Di 1 ban"
+            ]
+          },
+          "nativeEdition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work(Native language).",
+            "nullable": true,
+            "example": [
+              "第1版"
+            ]
+          },
+          "publisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by.",
+            "example": [
+              "[Xi'an] : Wei lai chu ban she"
+            ]
+          },
+          "nativePublisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by(Native language).",
+            "nullable": true,
+            "example": [
+              "[西安] : 未来出版社"
+            ]
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "publish date or year.",
+            "example": "2019-"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "subjects.",
+            "example": [
+              "Science -- Experiments -- Juvenile films"
+            ]
+          },
+          "physicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions.",
+            "example": [
+              "283 p. : ill. ; 22 cm"
+            ]
+          },
+          "nativePhysicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions(Native language).",
+            "nullable": true,
+            "example": [
+              "283页 : 插图 ; 22公分"
+            ]
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content.",
+            "nullable": true
+          },
+          "nativeSummary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content(Native language).",
+            "nullable": true
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note.",
+            "nullable": true
+          },
+          "nativeContents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note(Native language).",
+            "nullable": true
+          },
+          "thesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note.",
+            "nullable": true
+          },
+          "nativeThesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note(Native language).",
+            "nullable": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "notes."
+          },
+          "nativeNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native notes of the bibliographic record.",
+            "nullable": true
+          },
+          "allowReservation": {
+            "type": "boolean",
+            "description": "Allow to place reservation or not.",
+            "default": true
+          },
+          "isRestricted": {
+            "type": "boolean",
+            "description": "true, when title is marked as restricted publication.",
+            "default": false
+          },
+          "activeReservationsCount": {
+            "type": "integer",
+            "description": "Number of reservations placed and in queue, not fullfilled and not expired.",
+            "format": "int32",
+            "example": 3
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Target audience - Marc tag 521 (all).",
+            "nullable": true
+          },
+          "audienceImda": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "target audience - Marc tag 521 Ind 3 - Specific to highlight in display.",
+            "nullable": true,
+            "example": [
+              "IMDA Advisory: Parental Guidance recommended."
+            ]
+          },
+          "language": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Languages",
+            "example": [
+              "Chinese"
+            ]
+          },
+          "serial": {
+            "type": "boolean",
+            "description": "serial indicator.",
+            "default": false
+          },
+          "volumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information.",
+            "nullable": true,
+            "example": [
+              "Vol. 1 (Jul. 1859)-"
+            ]
+          },
+          "nativeVolumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information(Native language).",
+            "nullable": true
+          },
+          "frequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency.",
+            "nullable": true,
+            "example": [
+              "Monthly"
+            ]
+          },
+          "nativeFrequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency(Native language).",
+            "nullable": true
+          },
+          "credits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note.",
+            "nullable": true
+          },
+          "nativeCredits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note(Native language).",
+            "nullable": true
+          },
+          "performers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note.",
+            "nullable": true
+          },
+          "nativePerformers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note(Native language).",
+            "nullable": true
+          },
+          "availability": {
+            "type": "boolean",
+            "description": "true when at least 1 item is \"available\" status.",
+            "example": false
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the title",
+            "nullable": true,
+            "example": "Overdrive"
+          },
+          "volumes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume name.",
+            "nullable": true,
+            "example": [
+              "2023 issue 2"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record."
+          },
+          "nativeTitle": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record(Native language).",
+            "nullable": true
+          },
+          "seriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles.",
+            "nullable": true,
+            "example": [
+              "123 Zhima Jie"
+            ]
+          },
+          "nativeSeriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles(Native language).",
+            "nullable": true,
+            "example": [
+              "123芝麻街"
+            ]
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name in english.",
+            "example": "Song bing wu de yi xiang shi jie."
+          },
+          "nativeAuthor": {
+            "type": "string",
+            "description": "Bibliographic title(Native language).",
+            "nullable": true,
+            "example": "松饼屋的异想世界"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TitleRecord": {
+        "required": [
+          "format"
+        ],
+        "type": "object",
+        "properties": {
+          "brn": {
+            "type": "integer",
+            "description": "Bibliographic reference number.",
+            "format": "int32",
+            "example": 99999999
+          },
+          "digitalId": {
+            "type": "string",
+            "description": "For external query purpose, to get the title or reserve the title in Overdrive",
+            "nullable": true,
+            "example": "Overdrive Id"
+          },
+          "otherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles.",
+            "nullable": true
+          },
+          "nativeOtherTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other titles(Native language).",
+            "nullable": true
+          },
+          "variantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title.",
+            "nullable": true
+          },
+          "nativeVariantTitles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varying Form of Title(Native language).",
+            "nullable": true
+          },
+          "otherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors.",
+            "nullable": true
+          },
+          "nativeOtherAuthors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of other authors(Native language).",
+            "nullable": true
+          },
+          "isbns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Book Number identifiers.",
+            "example": [
+              "9709999999"
+            ]
+          },
+          "issns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Bibliographic International Standard Serial Number identifiers.",
+            "nullable": true,
+            "example": [
+              "9999-9999"
+            ]
+          },
+          "format": {
+            "$ref": "#/components/schemas/BibFormat"
+          },
+          "edition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work.",
+            "nullable": true,
+            "example": [
+              "Di 1 ban"
+            ]
+          },
+          "nativeEdition": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Information relating to the edition of a work(Native language).",
+            "nullable": true,
+            "example": [
+              "第1版"
+            ]
+          },
+          "publisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by.",
+            "example": [
+              "[Xi'an] : Wei lai chu ban she"
+            ]
+          },
+          "nativePublisher": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Published by(Native language).",
+            "nullable": true,
+            "example": [
+              "[西安] : 未来出版社"
+            ]
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "publish date or year.",
+            "example": "2019-"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "subjects.",
+            "example": [
+              "Science -- Experiments -- Juvenile films"
+            ]
+          },
+          "physicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions.",
+            "example": [
+              "283 p. : ill. ; 22 cm"
+            ]
+          },
+          "nativePhysicalDescription": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title physical dimensions(Native language).",
+            "nullable": true,
+            "example": [
+              "283页 : 插图 ; 22公分"
+            ]
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content.",
+            "nullable": true
+          },
+          "nativeSummary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Summary of the bibliographic content(Native language).",
+            "nullable": true
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note.",
+            "nullable": true
+          },
+          "nativeContents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Formatted Contents Note(Native language).",
+            "nullable": true
+          },
+          "thesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note.",
+            "nullable": true
+          },
+          "nativeThesis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dissertation Note(Native language).",
+            "nullable": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "notes."
+          },
+          "nativeNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native notes of the bibliographic record.",
+            "nullable": true
+          },
+          "allowReservation": {
+            "type": "boolean",
+            "description": "Allow to place reservation or not.",
+            "default": true
+          },
+          "isRestricted": {
+            "type": "boolean",
+            "description": "true, when title is marked as restricted publication.",
+            "default": false
+          },
+          "activeReservationsCount": {
+            "type": "integer",
+            "description": "Number of reservations placed and in queue, not fullfilled and not expired.",
+            "format": "int32",
+            "example": 3
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Target audience - Marc tag 521 (all).",
+            "nullable": true
+          },
+          "audienceImda": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "target audience - Marc tag 521 Ind 3 - Specific to highlight in display.",
+            "nullable": true,
+            "example": [
+              "IMDA Advisory: Parental Guidance recommended."
+            ]
+          },
+          "language": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Languages",
+            "example": [
+              "Chinese"
+            ]
+          },
+          "serial": {
+            "type": "boolean",
+            "description": "serial indicator.",
+            "default": false
+          },
+          "volumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information.",
+            "nullable": true,
+            "example": [
+              "Vol. 1 (Jul. 1859)-"
+            ]
+          },
+          "nativeVolumeNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume information(Native language).",
+            "nullable": true
+          },
+          "frequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency.",
+            "nullable": true,
+            "example": [
+              "Monthly"
+            ]
+          },
+          "nativeFrequency": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Publish frequency(Native language).",
+            "nullable": true
+          },
+          "credits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note.",
+            "nullable": true
+          },
+          "nativeCredits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Creation/Production Credits Note(Native language).",
+            "nullable": true
+          },
+          "performers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note.",
+            "nullable": true
+          },
+          "nativePerformers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Participant or Performer Note(Native language).",
+            "nullable": true
+          },
+          "availability": {
+            "type": "boolean",
+            "description": "true when at least 1 item is \"available\" status.",
+            "example": false
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the title",
+            "nullable": true,
+            "example": "Overdrive"
+          },
+          "volumes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Volume name.",
+            "nullable": true,
+            "example": [
+              "2023 issue 2"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TitleSummary": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record.",
+            "nullable": true
+          },
+          "nativeTitle": {
+            "type": "string",
+            "description": "Full title (with author info suffixed by /) of the bibliographic record(native language).",
+            "nullable": true
+          },
+          "seriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series titles.",
+            "nullable": true,
+            "example": [
+              "123 Zhima Jie"
+            ]
+          },
+          "nativeSeriesTitle": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Series title (native language).",
+            "nullable": true,
+            "example": [
+              "123芝麻街"
+            ]
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name in english.",
+            "nullable": true,
+            "example": "Song bing wu de yi xiang shi jie."
+          },
+          "nativeAuthor": {
+            "type": "string",
+            "description": "Author name (native language).",
+            "nullable": true,
+            "example": "松饼屋的异想世界"
+          },
+          "coverUrl": {
+            "$ref": "#/components/schemas/BookCover"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TitleRecord"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TooManyRequestsError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 429
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Too Many Requests"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "API calls quota exceeded"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "TransactionStatus": {
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Item transaction status code.",
+            "example": "I"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Item transaction status name",
+            "example": "In Transist"
+          },
+          "date": {
+            "type": "string",
+            "description": "Item transaction status date",
+            "format": "date-time",
+            "example": "2019-07-21T14:32:45"
+          },
+          "inTransitFrom": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "inTransitTo": {
+            "$ref": "#/components/schemas/Location"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Item Transactional Status. Please refer to code list C003."
+      },
+      "UnauthorizedError": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "The status code of the error.",
+            "format": "int32",
+            "example": 401
+          },
+          "error": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The type of the error.",
+            "example": "Unauthorized"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The message of the error.",
+            "example": "Invalid API Key"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Error contents including the specific error"
+      },
+      "UsageLevel": {
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Usage Level ILS code.",
+            "example": "001"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Usage Level code description",
+            "example": "Junior Picture Adult Lending"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Usage Level. Please refer to code list C004."
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "API Key",
+        "name": "X-Api-Key",
+        "in": "header"
+      },
+      "AppCode": {
+        "type": "apiKey",
+        "description": "App Code",
+        "name": "X-App-Code",
+        "in": "header"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Document - Code References",
+    "url": "https://openweb.nlb.gov.sg/api/References/Catalogue.html"
+  }
+}
