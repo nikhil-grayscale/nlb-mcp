@@ -8,8 +8,8 @@ from typing import Any, Dict, Optional
 import httpx
 from tenacity import AsyncRetrying, RetryError, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from .config import settings
-from .logging import get_logger, redact_headers
+from nlb_mcp.config import settings
+from nlb_mcp.logging import get_logger, redact_headers
 
 
 class UpstreamError(RuntimeError):

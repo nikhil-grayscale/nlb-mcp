@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from typing import Optional
 
 from fastmcp import FastMCP
 
-from .config import settings
-from .http_client import health_check as basic_health
-from .logging import get_logger
-from .models import NormalizedAvailability, TitleSummary, normalize_availability, normalize_titles
-from .nlb_client import get_availability, get_titles, search_titles
+from nlb_mcp.config import settings
+from nlb_mcp.http_client import health_check as basic_health
+from nlb_mcp.logging import get_logger
+from nlb_mcp.models import NormalizedAvailability, TitleSummary, normalize_availability, normalize_titles
+from nlb_mcp.nlb_client import get_availability, get_titles, search_titles
 
+# Ensure package root is on sys.path when invoked as a file (e.g., fastmcp inspect /app/nlb_mcp/server.py).
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 
 def _clamp_limit(value: Optional[int]) -> Optional[int]:
     if value is None:

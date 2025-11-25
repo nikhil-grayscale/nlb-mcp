@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from .http_client import get_json
+from nlb_mcp.http_client import get_json
 
 
 async def search_titles(
