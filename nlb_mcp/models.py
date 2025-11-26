@@ -54,19 +54,18 @@ def normalize_titles(response: Dict[str, Any]) -> List[TitleSummary]:
         if subjects is None:
             subjects = []
 
-        normalized.append(
-            {
-                "title": title,
-                "author": author,
-                "isbn": isbn,
-                "bibId": bib_id,
-                "brn": brn,
-                "publisher": publisher,
-                "publishYear": publish_year,
-                "formats": [category] if category else [],
-                "subjects": subjects,
-            }
-        )
+        entry: TitleSummary = {
+            "title": title,
+            "author": author,
+            "isbn": isbn,
+            "bibId": bib_id,
+            "brn": brn,
+            "publisher": publisher,
+            "publishYear": publish_year,
+            "formats": [category] if category else [],
+            "subjects": subjects,
+        }
+        normalized.append(_strip_nones(entry))
     return normalized
 
 
@@ -91,13 +90,17 @@ def normalize_availability(response: Dict[str, Any]) -> List[NormalizedAvailabil
         available = item.get("available") if "available" in item else item.get("Available")
         total = item.get("total") if "total" in item else item.get("Total")
 
-        normalized.append(
-            {
-                "branch": branch,
-                "callNumber": call_number,
-                "status": status,
-                "available": available,
-                "total": total,
-            }
-        )
+        entry: NormalizedAvailability = {
+            "branch": branch,
+            "callNumber": call_number,
+            "status": status,
+            "available": available,
+            "total": total,
+        }
+        normalized.append(_strip_nones(entry))
     return normalized
+
+
+def _strip_nones(obj: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a copy without None values to satisfy strict JSON schema validators."""
+    return {k: v for k, v in obj.items() if v is not None}
