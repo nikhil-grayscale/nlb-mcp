@@ -58,29 +58,15 @@ class NormalizedAvailability(TypedDict, total=False):
     total: int
 
 
-def normalize_titles(response: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_titles(response: Dict[str, Any]) -> List[TitleSummary]:
     titles_raw: List[Dict[str, Any]] = []
-    facets = []
-    total_records = None
-    count = None
-    has_more = None
-    next_offset = None
 
     if isinstance(response, dict):
         if "Result" in response and isinstance(response["Result"], dict):
             result = response["Result"]
             titles_raw = result.get("Titles") or []
-            total_records = result.get("TotalRecords")
-            count = result.get("Count") or result.get("count")
-            has_more = result.get("HasMoreRecords")
-            next_offset = result.get("NextRecordsOffset")
         else:
             titles_raw = response.get("titles") or []
-            total_records = response.get("totalRecords")
-            count = response.get("count")
-            has_more = response.get("hasMoreRecords")
-            next_offset = response.get("nextRecordsOffset")
-        facets = response.get("facets") or response.get("Facets") or []
 
     titles: List[TitleSummary] = []
     for item in titles_raw:
@@ -105,16 +91,7 @@ def normalize_titles(response: Dict[str, Any]) -> Dict[str, Any]:
         }
         titles.append(_strip_nones(entry))
 
-    return _strip_nones(
-        {
-            "totalRecords": total_records,
-            "count": count,
-            "hasMoreRecords": has_more,
-            "nextRecordsOffset": next_offset,
-            "titles": titles,
-            "facets": _normalize_facets(facets),
-        }
-    )
+    return titles
 
 
 def normalize_availability(response: Dict[str, Any]) -> List[NormalizedAvailability]:
