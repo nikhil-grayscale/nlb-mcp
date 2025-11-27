@@ -21,7 +21,7 @@ class NormalizedAvailability(TypedDict, total=False):
     total: int
 
 
-def normalize_titles(response: Dict[str, Any]) -> SearchTitlesResponseV2:
+def normalize_titles(response: Dict[str, Any]) -> List[SearchTitlesResponseV2]:
     titles_raw: List[Dict[str, Any]] = []
     total_records = None
     count = None
@@ -68,7 +68,7 @@ def normalize_titles(response: Dict[str, Any]) -> SearchTitlesResponseV2:
         }
         titles.append(_strip_nones(entry))
 
-    return _strip_nones(
+    resp: SearchTitlesResponseV2 = _strip_nones(
         {
             "totalRecords": total_records,
             "count": count,
@@ -78,6 +78,8 @@ def normalize_titles(response: Dict[str, Any]) -> SearchTitlesResponseV2:
             "facets": _normalize_facets(facets_raw),
         }
     )
+    # Wrap in a list to satisfy clients that expect an array result.
+    return [resp]
 
 
 def normalize_availability(response: Dict[str, Any]) -> List[NormalizedAvailability]:
