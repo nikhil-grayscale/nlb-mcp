@@ -17,7 +17,12 @@ from nlb_mcp.branches import BRANCHES
 from nlb_mcp.config import settings
 from nlb_mcp.http_client import health_check as basic_health
 from nlb_mcp.logging import get_logger
-from nlb_mcp.models import NormalizedAvailability, TitleSummary, normalize_availability, normalize_titles
+from nlb_mcp.models import (
+    NormalizedAvailability,
+    SearchTitlesResponseV2,
+    normalize_availability,
+    normalize_titles,
+)
 from nlb_mcp.nlb_client import get_availability, get_titles, search_titles
 
 def _clamp_limit(value: Optional[int]) -> Optional[int]:
@@ -49,7 +54,7 @@ async def tool_search_titles(
     limit: Optional[int] = None,
     sort_fields: Optional[str] = None,
     source: Optional[str] = None,
-) -> list[TitleSummary]:
+) -> List[SearchTitlesResponseV2]:
     log = get_logger()
     log.info(
         "tool search_titles called",
@@ -61,7 +66,7 @@ async def tool_search_titles(
         sort_fields=_validate_sort(sort_fields),
         source=source.strip() if source else None,
     )
-    return normalize_titles(response)
+    return _limit_titles(normalize_titles(response), 5)
 
 
 async def tool_get_titles(
@@ -74,7 +79,7 @@ async def tool_get_titles(
     sort_fields: Optional[str] = None,
     set_id: Optional[int] = None,
     offset: Optional[int] = None,
-) -> list[TitleSummary]:
+) -> List[SearchTitlesResponseV2]:
     log = get_logger()
     log.info(
         "tool search_titles_advanced called",
@@ -97,7 +102,7 @@ async def tool_get_titles(
         set_id=set_id,
         offset=offset,
     )
-    return normalize_titles(response)
+    return _limit_titles(normalize_titles(response), 5)
 
 
 async def tool_availability(
@@ -155,6 +160,18 @@ async def tool_availability_at_branch(
         branch_id=branch_id.strip(),
     )
     return normalize_availability(response)
+
+
+def _limit_titles(results: List[SearchTitlesResponseV2], max_titles: int) -> List[SearchTitlesResponseV2]:
+    if not results:
+        return results
+    first = results[0]
+    titles = first.get("titles") or []
+    trimmed = titles[:max_titles]
+    first["titles"] = trimmed
+    if "count" in first and first["count"] is not None:
+        first["count"] = min(first["count"], len(trimmed))
+    return results
 
 async def tool_list_branches(filter: Optional[str] = None) -> list[dict]:
     # Return branch code/name pairs; optional substring filter on code or name.
