@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 
 from fastmcp import FastMCP
 
+from nlb_mcp.branches import BRANCHES
 from nlb_mcp.config import settings
 from nlb_mcp.http_client import health_check as basic_health
 from nlb_mcp.logging import get_logger
@@ -155,6 +156,13 @@ async def tool_availability_at_branch(
     )
     return normalize_availability(response)
 
+async def tool_list_branches(filter: Optional[str] = None) -> list[dict]:
+    # Return branch code/name pairs; optional substring filter on code or name.
+    if not filter:
+        return BRANCHES
+    term = filter.lower()
+    return [b for b in BRANCHES if term in b["code"].lower() or term in b["name"].lower()]
+
 
 def create_server() -> FastMCP:
     """
@@ -188,6 +196,22 @@ def create_server() -> FastMCP:
         name="availability_at_branch",
         description="Get item availability for a title/ISBN at a specific branch.",
     )(tool_availability_at_branch)
+    server.tool(
+        name="list_branches",
+        description="List branch codes and names (C005 Library Location). Optional substring filter via 'filter'.",
+    )(tool_list_branches)
+
+    # Expose usage prompt as a resource if the FastMCP server supports resource registration.
+    usage_path = Path(__file__).resolve().parent / "usage.md"
+    register_resource = getattr(server, "resource", None) or getattr(server, "add_resource", None)
+    if callable(register_resource):
+        register_resource(
+            {
+                "name": "usage",
+                "description": "Usage guide for NLB MCP tools",
+                "path": str(usage_path),
+            }
+        )
 
     return server
 
