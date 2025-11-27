@@ -5,7 +5,7 @@ from __future__ import annotations
 # Ensure package root is on sys.path when invoked as a file (e.g., fastmcp inspect /app/nlb_mcp/server.py).
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
