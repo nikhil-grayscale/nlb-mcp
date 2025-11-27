@@ -53,7 +53,6 @@ def normalize_titles(response: Dict[str, Any]) -> List[TitleSummary]:
         subjects = item.get("subjects") or item.get("Subjects") or []
         if subjects is None:
             subjects = []
-
         entry: TitleSummary = {
             "title": title,
             "author": author,
@@ -104,3 +103,4 @@ def normalize_availability(response: Dict[str, Any]) -> List[NormalizedAvailabil
 def _strip_nones(obj: Dict[str, Any]) -> Dict[str, Any]:
     """Return a copy without None values to satisfy strict JSON schema validators."""
     return {k: v for k, v in obj.items() if v is not None}
+
