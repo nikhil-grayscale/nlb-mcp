@@ -5,7 +5,7 @@ from __future__ import annotations
 # Ensure package root is on sys.path when invoked as a file (e.g., fastmcp inspect /app/nlb_mcp/server.py).
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -54,7 +54,7 @@ async def tool_search_titles(
     limit: Optional[int] = None,
     sort_fields: Optional[str] = None,
     source: Optional[str] = None,
-) -> List[SearchTitlesResponseV2]:
+) -> List[Dict[str, Any]]:
     log = get_logger()
     log.info(
         "tool search_titles called",
@@ -66,7 +66,7 @@ async def tool_search_titles(
         sort_fields=_validate_sort(sort_fields),
         source=source.strip() if source else None,
     )
-    return _limit_titles(normalize_titles(response), 5)
+    return _basic_titles(_limit_titles(normalize_titles(response), 5))
 
 
 async def tool_get_titles(
@@ -79,7 +79,7 @@ async def tool_get_titles(
     sort_fields: Optional[str] = None,
     set_id: Optional[int] = None,
     offset: Optional[int] = None,
-) -> List[SearchTitlesResponseV2]:
+) -> List[Dict[str, Any]]:
     log = get_logger()
     log.info(
         "tool search_titles_advanced called",
@@ -102,7 +102,7 @@ async def tool_get_titles(
         set_id=set_id,
         offset=offset,
     )
-    return _limit_titles(normalize_titles(response), 5)
+    return _basic_titles(_limit_titles(normalize_titles(response), 5))
 
 
 async def tool_availability(
@@ -172,6 +172,42 @@ def _limit_titles(results: List[SearchTitlesResponseV2], max_titles: int) -> Lis
     if "count" in first and first["count"] is not None:
         first["count"] = min(first["count"], len(trimmed))
     return results
+
+
+def _basic_titles(results: List[SearchTitlesResponseV2]) -> List[Dict[str, Any]]:
+    if not results:
+        return []
+    data = results[0]
+    titles = data.get("titles") or []
+    basics: List[Dict[str, Any]] = []
+    for title in titles:
+        recs = []
+        for rec in title.get("records", []):
+            fmt = rec.get("format")
+            if isinstance(fmt, dict):
+                fmt = fmt.get("name") or fmt.get("code")
+            recs.append(
+                _strip_nones(
+                    {
+                        "brn": rec.get("brn"),
+                        "format": fmt,
+                        "availability": rec.get("availability"),
+                    }
+                )
+            )
+        basics.append(
+            _strip_nones(
+                {
+                    "title": title.get("title"),
+                    "records": recs,
+                }
+            )
+        )
+    return basics
+
+
+def _strip_nones(obj: Dict[str, Any]) -> Dict[str, Any]:
+    return {k: v for k, v in obj.items() if v is not None}
 
 async def tool_list_branches(filter: Optional[str] = None) -> list[dict]:
     # Return branch code/name pairs; optional substring filter on code or name.
