@@ -20,7 +20,6 @@ from nlb_mcp.logging import get_logger
 from nlb_mcp.models import (
     NormalizedAvailability,
     SearchTitlesResponseV2,
-    normalize_availability,
     normalize_titles,
 )
 from nlb_mcp.nlb_client import get_availability, get_titles, search_titles
@@ -110,7 +109,7 @@ async def tool_availability(
     isbn: Optional[str] = None,
     control_no: Optional[str] = None,
     branch_id: Optional[str] = None,
-) -> list[NormalizedAvailability]:
+) -> List[Dict[str, Any]]:
     log = get_logger()
     _validate_identifiers(bib_id, isbn, control_no)
     log.info(
@@ -129,7 +128,7 @@ async def tool_availability(
         control_no=control_no.strip() if control_no else None,
         branch_id=branch_id.strip() if branch_id else None,
     )
-    return normalize_availability(response)
+    return _basic_availability(response, bib_id, branch_id)
 
 
 async def tool_availability_at_branch(
@@ -137,7 +136,7 @@ async def tool_availability_at_branch(
     bib_id: Optional[str] = None,
     isbn: Optional[str] = None,
     control_no: Optional[str] = None,
-) -> list[NormalizedAvailability]:
+) -> List[Dict[str, Any]]:
     # Require a branch plus at least one identifier to avoid broad queries.
     if not branch_id:
         raise ValueError("branch_id is required")
@@ -159,7 +158,7 @@ async def tool_availability_at_branch(
         control_no=control_no.strip() if control_no else None,
         branch_id=branch_id.strip(),
     )
-    return normalize_availability(response)
+    return _basic_availability(response, bib_id, branch_id)
 
 
 def _limit_titles(results: List[SearchTitlesResponseV2], max_titles: int) -> List[SearchTitlesResponseV2]:
@@ -200,6 +199,30 @@ def _basic_titles(results: List[SearchTitlesResponseV2]) -> List[Dict[str, Any]]
                 {
                     "title": title.get("title"),
                     "records": recs,
+                }
+            )
+        )
+    return basics
+
+
+def _basic_availability(response: dict, bib_id: Optional[str], branch_hint: Optional[str] = None) -> List[Dict[str, Any]]:
+    items: List[dict] = []
+    if isinstance(response, dict):
+        if isinstance(response.get("Result"), dict):
+            items = response["Result"].get("Items") or []
+        if not items:
+            items = response.get("items") or []
+
+    basics: List[Dict[str, Any]] = []
+    for item in items:
+        loc = item.get("location") or item.get("Location") or {}
+        branch_id = item.get("BranchID") or item.get("branchId") or loc.get("code") or branch_hint
+        brn = item.get("brn") or item.get("BRN")
+        basics.append(
+            _strip_nones(
+                {
+                    "branchId": branch_id,
+                    "bibId": bib_id or (str(brn) if brn is not None else None),
                 }
             )
         )
