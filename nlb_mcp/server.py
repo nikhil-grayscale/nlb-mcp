@@ -40,7 +40,7 @@ def _validate_sort(sort_fields: Optional[str]) -> Optional[str]:
 
 def _validate_identifiers(bib_id: Optional[str], isbn: Optional[str], control_no: Optional[str]) -> None:
     if not (bib_id or isbn or control_no):
-        raise ValueError("Provide at least one identifier: bib_id, isbn, or control_no")
+        raise ValueError("Provide at least one identifier: bib_id (or brn), isbn, or control_no")
 
 
 async def health_check() -> dict:
@@ -106,11 +106,15 @@ async def tool_get_titles(
 
 async def tool_availability(
     bib_id: Optional[str] = None,
+    brn: Optional[str] = None,
     isbn: Optional[str] = None,
     control_no: Optional[str] = None,
     branch_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     log = get_logger()
+    # Map brn to bib_id if provided.
+    if not bib_id and brn:
+        bib_id = brn
     _validate_identifiers(bib_id, isbn, control_no)
     log.info(
         "tool availability_by_title called",
@@ -134,12 +138,15 @@ async def tool_availability(
 async def tool_availability_at_branch(
     branch_id: str,
     bib_id: Optional[str] = None,
+    brn: Optional[str] = None,
     isbn: Optional[str] = None,
     control_no: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     # Require a branch plus at least one identifier to avoid broad queries.
     if not branch_id:
         raise ValueError("branch_id is required")
+    if not bib_id and brn:
+        bib_id = brn
     _validate_identifiers(bib_id, isbn, control_no)
     log = get_logger()
     log.info(
