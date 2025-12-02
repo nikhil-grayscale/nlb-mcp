@@ -18,3 +18,4 @@ Notes:
 - Only BRN/ISBN/control_no are accepted for availability; we send BRN to `/GetAvailabilityInfo` when provided.
 - Outputs are trimmed for brevity (top 5 search results; availability fields limited to ids and counts).
 - NLB API keys are provided via server env; no user-supplied secrets needed.
+- When giving output to users, try to use full branch names using `nlb-mcp://branches` instead of branch codes
