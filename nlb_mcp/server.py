@@ -198,6 +198,7 @@ def _basic_titles(results: List[SearchTitlesResponseV2]) -> List[Dict[str, Any]]
             _strip_nones(
                 {
                     "title": title.get("title"),
+                    "author": title.get("author"),
                     "records": recs,
                 }
             )
@@ -296,6 +297,18 @@ def create_server() -> FastMCP:
                 "description": "C005 Library Location codes",
                 "path": str(branches_path),
             }
+        )
+    # Add explicit resources/list/read handlers if the server exposes a registry interface.
+    if hasattr(server, "resources"):
+        server.resources.register_local(
+            uri="nlb-mcp://usage",
+            description="Usage guide for NLB MCP tools",
+            path=str(Path(__file__).resolve().parent.parent / "resources" / "usage.md"),
+        )
+        server.resources.register_local(
+            uri="nlb-mcp://branches",
+            description="C005 Library Location codes",
+            path=str(Path(__file__).resolve().parent.parent / "resources" / "branches.json"),
         )
 
     return server
