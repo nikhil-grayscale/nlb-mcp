@@ -10,8 +10,8 @@ Use these tools to find titles and availability:
 
 Common flow to check a title at a branch:
 1) Call `search_titles` (or `search_titles_advanced`) with title/keywords.
-2) Pick a `brn` from the returned records (use `format` to choose format if needed).
-3) If you need a branch code, read `nlb-mcp://branches` or call `list_branches` and pick the `code` that matches the desired library.
+2) Prefer the first `brn` from the returned records; prefer records with format "Book" for shelf availability (ebooks are not on shelf).
+3) If you need a branch code, call `list_branches` or read `nlb-mcp://branches` and pick the `code` that matches the desired library.
 4) Call `availability_at_branch` with `branch_id` and the `brn` (or ISBN/control number).
 
 Notes:
