@@ -19,6 +19,7 @@ class NormalizedAvailability(TypedDict, total=False):
     status: str
     available: int
     total: int
+    brn: str
 
 
 def normalize_titles(response: Dict[str, Any]) -> List[SearchTitlesResponseV2]:

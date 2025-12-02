@@ -38,9 +38,9 @@ def _validate_sort(sort_fields: Optional[str]) -> Optional[str]:
     return sort_fields
 
 
-def _validate_identifiers(bib_id: Optional[str], isbn: Optional[str], control_no: Optional[str]) -> None:
-    if not (bib_id or isbn or control_no):
-        raise ValueError("Provide at least one identifier: bib_id (or brn), isbn, or control_no")
+def _validate_identifiers(brn: Optional[str], isbn: Optional[str], control_no: Optional[str]) -> None:
+    if not (brn or isbn or control_no):
+        raise ValueError("Provide at least one identifier: brn, isbn, or control_no")
 
 
 async def health_check() -> dict:
@@ -105,17 +105,13 @@ async def tool_get_titles(
 
 
 async def tool_availability(
-    bib_id: Optional[str] = None,
     brn: Optional[str] = None,
     isbn: Optional[str] = None,
     control_no: Optional[str] = None,
     branch_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     log = get_logger()
-    # Map brn to bib_id if provided.
-    if not bib_id and brn:
-        bib_id = brn
-    _validate_identifiers(bib_id, isbn, control_no)
+    _validate_identifiers(brn, isbn, control_no)
     log.info(
         "tool availability_by_title called",
         extra={
@@ -127,17 +123,16 @@ async def tool_availability(
     )
 
     response = await get_availability(
-        bib_id=bib_id.strip() if bib_id else None,
+        brn=brn.strip() if brn else None,
         isbn=isbn.strip() if isbn else None,
         control_no=control_no.strip() if control_no else None,
         branch_id=branch_id.strip() if branch_id else None,
     )
-    return _basic_availability(response, bib_id, branch_id)
+    return _basic_availability(response, brn, branch_id)
 
 
 async def tool_availability_at_branch(
     branch_id: str,
-    bib_id: Optional[str] = None,
     brn: Optional[str] = None,
     isbn: Optional[str] = None,
     control_no: Optional[str] = None,
@@ -145,9 +140,7 @@ async def tool_availability_at_branch(
     # Require a branch plus at least one identifier to avoid broad queries.
     if not branch_id:
         raise ValueError("branch_id is required")
-    if not bib_id and brn:
-        bib_id = brn
-    _validate_identifiers(bib_id, isbn, control_no)
+    _validate_identifiers(brn, isbn, control_no)
     log = get_logger()
     log.info(
         "tool availability_at_branch called",
@@ -160,12 +153,12 @@ async def tool_availability_at_branch(
     )
 
     response = await get_availability(
-        bib_id=bib_id.strip() if bib_id else None,
+        brn=brn.strip() if brn else None,
         isbn=isbn.strip() if isbn else None,
         control_no=control_no.strip() if control_no else None,
         branch_id=branch_id.strip(),
     )
-    return _basic_availability(response, bib_id, branch_id)
+    return _basic_availability(response, brn, branch_id)
 
 
 def _limit_titles(results: List[SearchTitlesResponseV2], max_titles: int) -> List[SearchTitlesResponseV2]:
@@ -229,7 +222,7 @@ def _basic_availability(response: dict, bib_id: Optional[str], branch_hint: Opti
             _strip_nones(
                 {
                     "branchId": branch_id,
-                    "bibId": bib_id or (str(brn) if brn is not None else None),
+                    "brn": bib_id or (str(brn) if brn is not None else None),
                 }
             )
         )
@@ -293,6 +286,15 @@ def create_server() -> FastMCP:
                 "name": "usage",
                 "description": "Usage guide for NLB MCP tools",
                 "path": str(usage_path),
+            }
+        )
+        # Expose branch codes as a resource for clients that want to map names to codes.
+        branches_path = Path(__file__).resolve().parent.parent / "resources" / "branches.json"
+        register_resource(
+            {
+                "name": "branches",
+                "description": "C005 Library Location codes",
+                "path": str(branches_path),
             }
         )
 

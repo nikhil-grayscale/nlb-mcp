@@ -57,11 +57,11 @@ async def get_titles(
 
 
 async def get_availability(
-    *, bib_id: Optional[str] = None, isbn: Optional[str] = None, control_no: Optional[str] = None, branch_id: Optional[str] = None
+    *, brn: Optional[str] = None, isbn: Optional[str] = None, control_no: Optional[str] = None, branch_id: Optional[str] = None
 ) -> Dict[str, Any]:
     params: Dict[str, str] = {}
-    if bib_id:
-        params["BID"] = bib_id
+    if brn:
+        params["BRN"] = brn
     if isbn:
         params["ISBN"] = isbn
     if control_no:
