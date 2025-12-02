@@ -219,11 +219,17 @@ def _basic_availability(response: dict, brn: Optional[str], branch_id: Optional[
         loc = item.get("location") or item.get("Location") or {}
         resolved_branch = item.get("BranchID") or item.get("branchId") or loc.get("code") or branch_id
         resolved_brn = item.get("brn") or item.get("BRN")
+        available = item.get("available") if "available" in item else item.get("Available")
+        total = item.get("total") if "total" in item else item.get("Total")
+        status = item.get("status") or item.get("Status")
         basics.append(
             _strip_nones(
                 {
                     "branchId": resolved_branch,
                     "brn": brn or (str(resolved_brn) if resolved_brn is not None else None),
+                    "available": available,
+                    "total": total,
+                    "status": status,
                 }
             )
         )
