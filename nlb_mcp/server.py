@@ -115,7 +115,7 @@ async def tool_availability(
     log.info(
         "tool availability_by_title called",
         extra={
-            "has_bib": bool(bib_id),
+            "has_brn": bool(brn),
             "has_isbn": bool(isbn),
             "has_control": bool(control_no),
             "has_branch": bool(branch_id),
@@ -145,7 +145,7 @@ async def tool_availability_at_branch(
     log.info(
         "tool availability_at_branch called",
         extra={
-            "has_bib": bool(bib_id),
+            "has_brn": bool(brn),
             "has_isbn": bool(isbn),
             "has_control": bool(control_no),
             "branch": branch_id,
@@ -206,7 +206,7 @@ def _basic_titles(results: List[SearchTitlesResponseV2]) -> List[Dict[str, Any]]
     return basics
 
 
-def _basic_availability(response: dict, bib_id: Optional[str], branch_hint: Optional[str] = None) -> List[Dict[str, Any]]:
+def _basic_availability(response: dict, brn: Optional[str], branch_id: Optional[str] = None) -> List[Dict[str, Any]]:
     items: List[dict] = []
     if isinstance(response, dict):
         if isinstance(response.get("Result"), dict):
@@ -217,13 +217,13 @@ def _basic_availability(response: dict, bib_id: Optional[str], branch_hint: Opti
     basics: List[Dict[str, Any]] = []
     for item in items:
         loc = item.get("location") or item.get("Location") or {}
-        branch_id = item.get("BranchID") or item.get("branchId") or loc.get("code") or branch_hint
-        brn = item.get("brn") or item.get("BRN")
+        resolved_branch = item.get("BranchID") or item.get("branchId") or loc.get("code") or branch_id
+        resolved_brn = item.get("brn") or item.get("BRN")
         basics.append(
             _strip_nones(
                 {
-                    "branchId": branch_id,
-                    "brn": bib_id or (str(brn) if brn is not None else None),
+                    "branchId": resolved_branch,
+                    "brn": brn or (str(resolved_brn) if resolved_brn is not None else None),
                 }
             )
         )
