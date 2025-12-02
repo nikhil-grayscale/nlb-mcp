@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 # Ensure package root is on sys.path when invoked as a file (e.g., fastmcp inspect /app/nlb_mcp/server.py).
+import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -13,7 +14,6 @@ if str(ROOT) not in sys.path:
 
 from fastmcp import FastMCP
 
-from nlb_mcp.branches import BRANCHES
 from nlb_mcp.config import settings
 from nlb_mcp.http_client import health_check as basic_health
 from nlb_mcp.logging import get_logger
@@ -278,38 +278,18 @@ def create_server() -> FastMCP:
         description="List branch codes and names (C005 Library Location). Optional substring filter via 'filter'.",
     )(tool_list_branches)
 
-    # Expose usage prompt as a resource if the FastMCP server supports resource registration.
+    # Resources: lightweight wrappers exposing static files.
     usage_path = Path(__file__).resolve().parent.parent / "resources" / "usage.md"
-    register_resource = getattr(server, "resource", None) or getattr(server, "add_resource", None)
-    if callable(register_resource):
-        register_resource(
-            {
-                "name": "usage",
-                "description": "Usage guide for NLB MCP tools",
-                "path": str(usage_path),
-            }
-        )
-        # Expose branch codes as a resource for clients that want to map names to codes.
-        branches_path = Path(__file__).resolve().parent.parent / "resources" / "branches.json"
-        register_resource(
-            {
-                "name": "branches",
-                "description": "C005 Library Location codes",
-                "path": str(branches_path),
-            }
-        )
-    # Add explicit resources/list/read handlers if the server exposes a registry interface.
-    if hasattr(server, "resources"):
-        server.resources.register_local(
-            uri="nlb-mcp://usage",
-            description="Usage guide for NLB MCP tools",
-            path=str(Path(__file__).resolve().parent.parent / "resources" / "usage.md"),
-        )
-        server.resources.register_local(
-            uri="nlb-mcp://branches",
-            description="C005 Library Location codes",
-            path=str(Path(__file__).resolve().parent.parent / "resources" / "branches.json"),
-        )
+    branches_path = Path(__file__).resolve().parent.parent / "resources" / "branches.json"
+    resource_api = getattr(server, "resource", None)
+    if callable(resource_api):
+        @resource_api("nlb-mcp://usage")
+        def resource_usage() -> str:
+            return usage_path.read_text()
+
+        @resource_api("nlb-mcp://branches")
+        def resource_branches() -> Dict[str, Any]:
+            return {"branches": json.loads(branches_path.read_text())}
 
     return server
 
