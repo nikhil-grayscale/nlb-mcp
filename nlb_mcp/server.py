@@ -279,7 +279,7 @@ def create_server() -> FastMCP:
     )(tool_list_branches)
 
     # Expose usage prompt as a resource if the FastMCP server supports resource registration.
-    usage_path = Path(__file__).resolve().parent / "usage.md"
+    usage_path = Path(__file__).resolve().parent.parent / "resources" / "usage.md"
     register_resource = getattr(server, "resource", None) or getattr(server, "add_resource", None)
     if callable(register_resource):
         register_resource(
